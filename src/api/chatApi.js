@@ -6,7 +6,7 @@ const API = axios.create({
 
 
 const MODE = "test";       // "test" | "prod"
-const TEST_TYPE = "slow"; // delay | error | slow | large | stream | multi |
+const TEST_TYPE = "error"; // delay | error | slow | large | multi |
 
 // Response Normalizer
 function normalizeResponse(data) {
@@ -36,5 +36,32 @@ export async function sendChat(message) {
   } catch (error) {
     console.error("API Error:", error);
     throw error;
+  }
+}
+
+
+export async function streamChat(message, onChunk) {
+  const res = await fetch("http://localhost:3000/api/test/stream", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message }),
+  });
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+
+  let done = false;
+
+  while (!done) {
+    const { value, done: doneReading } = await reader.read();
+    done = doneReading;
+
+    const chunk = decoder.decode(value);
+
+    if (chunk) {
+      onChunk(chunk); 
+    }
   }
 }

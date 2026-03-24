@@ -1,15 +1,14 @@
-import React from "react";
 
 export default function Messages({ msg }) {
   const isUser = msg.sender === "user";
 
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"} my-4`}>
+    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"} my-4`}>
       <div
-        className={`p-3 rounded-xl break-words max-w-[70%] md:max-w-[40%] ${
+        className={`p-3 rounded-xl wrap-words ${
           isUser
-            ? "bg-blue-500 text-white"
-            : "bg-gray-700 text-white"
+            ? "bg-blue-500 text-white max-w-[70%] md:max-w-[50%]"
+            : "text-white max-w-[90%]"
         }`}
         style={{ whiteSpace: "pre-wrap" }}
       >

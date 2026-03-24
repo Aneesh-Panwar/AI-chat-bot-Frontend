@@ -40,7 +40,7 @@ export default function InputBox({ sendMessage, loading }) {
             <textarea name="userInput" ref={inputRef}
                 value={msg} onChange={handleChange}
                 onKeyDown={handleKeyPress}
-                className="flex-grow w-full p-4 pr-16 rounded-2xl bg-gray-800 text-white resize-none overflow-hidden max-h-40 shadow-md  shadow-gray-600 outline-none"
+                className="grow w-full p-4 pr-16 rounded-2xl bg-gray-800 text-white resize-none overflow-hidden max-h-40 shadow-md  shadow-gray-600 outline-none"
             />
             <button onClick={handleSend} className='bg-white h-10 w-10 rounded-full text-black font-bold absolute right-3 bottom-6'><img src={sendArrow} alt="send" className='p-2'/></button>
             <button

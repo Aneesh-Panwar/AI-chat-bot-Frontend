@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InputBox from "./InputBox";
 import Messages from "./Messages";
-import { sendChat } from "../api/chatApi";
+import { sendChat, streamChat } from "../api/chatApi";
 
 export default function ChatBot() {
   const chatEndRef = useRef(null);
@@ -19,14 +19,30 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const result = await sendChat(text);
+      const USE_STREAM = true;
 
-      const botMsg = {
-        text: result.text,
-        sender: "bot",
-      };
+      if (USE_STREAM) {
+        let botMsg = { text: "", sender: "bot" };
+        setMessages(prev => [...prev, botMsg]);
 
-      setMessages((prev) => [...prev, botMsg]);
+        await streamChat(text, (chunk) => {
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1].text += chunk;
+            return updated;
+          });
+        });
+
+      } else {
+        const result = await sendChat(text);
+
+        const botMsg = {
+          text: result.text,
+          sender: "bot",
+        };
+
+        setMessages((prev) => [...prev, botMsg]);
+      }
       setError(false);
     } catch (err) {
       console.error(err);
@@ -61,7 +77,7 @@ export default function ChatBot() {
         )}
 
         {(error && !loading) && (
-          <div className="text-red-500">Error occurred</div>
+          <div className="text-red-500">Something went wrong. Try again.</div>
         )}
 
         <div ref={chatEndRef} />
