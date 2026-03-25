@@ -6,7 +6,7 @@ const API = axios.create({
 
 
 const MODE = "test";       // "test" | "prod"
-const TEST_TYPE = "error"; // delay | error | slow | large | multi |
+const TEST_TYPE = "delay"; // delay | error | slow | large | multi |
 
 // Response Normalizer
 function normalizeResponse(data) {
