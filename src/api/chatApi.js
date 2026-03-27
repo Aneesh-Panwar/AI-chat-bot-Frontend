@@ -39,15 +39,17 @@ export async function sendChat(message) {
   }
 }
 
-
-export async function streamChat(message, onChunk) {
+export async function streamChat({message, signal, onChunk}) {
+  
   const res = await fetch("http://localhost:3000/api/test/stream", {
     method: "POST",
+    signal,
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ message }),
   });
+
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
