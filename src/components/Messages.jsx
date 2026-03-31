@@ -12,7 +12,7 @@ export default function Messages({ msg }) {
         } break-words`}
         style={{ whiteSpace: "pre-wrap" }}
       >
-        {msg.text}
+        {msg.message}
       </div>
     </div>
   );

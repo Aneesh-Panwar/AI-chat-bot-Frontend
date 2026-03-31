@@ -41,7 +41,7 @@ export async function sendChat(message) {
 
 export async function streamChat({message, signal, onChunk}) {
   
-  const res = await fetch("http://localhost:3000/api/test/stream", {
+  const res = await fetch("http://localhost:3000/api/chat/stream", {
     method: "POST",
     signal,
     headers: {
@@ -50,20 +50,33 @@ export async function streamChat({message, signal, onChunk}) {
     body: JSON.stringify({ message }),
   });
 
+  if (!res.ok){
+    const errorData = await res.json();
+    throw new Error(errorData.error,"request failed");
+  }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
 
   let done = false;
 
-  while (!done) {
-    const { value, done: doneReading } = await reader.read();
-    done = doneReading;
-
-    const chunk = decoder.decode(value);
-
-    if (chunk) {
-      onChunk(chunk); 
+  try {
+    while (!done) {
+      const { value, done: doneReading } = await reader.read();
+      done = doneReading;
+  
+      if(value){
+        const chunk = decoder.decode(value);
+        if (chunk) {
+          onChunk(chunk); 
+        }
+      }
+    }
+  } catch (error) {
+    if (err.name === "AbortError") {
+      console.log("Stream aborted");
+    } else {
+      throw err;
     }
   }
 }

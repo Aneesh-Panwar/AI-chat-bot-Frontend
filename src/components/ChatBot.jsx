@@ -22,13 +22,13 @@ export default function ChatBot() {
     };
   }, []);
 
-  const sendMessage = async (text) => {
+  const sendMessage = async (message) => {
   if (loading) return;
 
   setError(false);
   setLoading(true);
 
-  const userMsg = { text, sender: "user" };
+  const userMsg = { message, sender: "user" };
   setMessages((prev) => [...prev, userMsg]);
 
   try {
@@ -36,41 +36,41 @@ export default function ChatBot() {
 
     if (USE_STREAM) {
 
-    // Initialize the empty bot message in the UI
-    let botIndex;  // index using to avoid bugs
-    setMessages((prev) => {
-      botIndex = prev.length;
-      return [...prev, { text: "", sender: "bot" }];
-    });
+      // Initialize the empty bot message in the UI
+      let botIndex;  // index using to avoid bugs
+      setMessages((prev) => {
+        botIndex = prev.length;
+        return [...prev, { message: "", sender: "bot" }];
+      });
 
-    let botText = ""; //keeps adding chunk
+      let botText = ""; //keeps adding chunk
 
-    controllerRef.current?.abort(); // to delete previous refrence of abort 
+      controllerRef.current?.abort(); // to delete previous refrence of abort 
 
-    const controller = new AbortController(); //create new abort ref
-    controllerRef.current = controller;
+      const controller = new AbortController(); //create new abort ref
+      controllerRef.current = controller;
 
-    // Start the streaming
-    await streamChat({
-      text,
-      signal:controller.signal,
-      onChunk:(chunk) => {
+      // Start the streaming
+      await streamChat({
+        message,
+        signal:controller.signal,
+        onChunk:(chunk) => {
 
-      
-        botText += chunk;
+        
+          botText += chunk;
 
-        setMessages((prev) => {
-            const updated = [...prev];
-            if (updated[botIndex]) {
-              updated[botIndex].text = botText;
-            }
-            return updated;
-        });
-      }
-    });  
+          setMessages((prev) => {
+              const updated = [...prev];
+              if (updated[botIndex]) {
+                updated[botIndex].message = botText;
+              }
+              return updated;
+          });
+        }
+      });  
     } else {
-      const result = await sendChat(text);
-      const botMsg = { text: result.text, sender: "bot" };
+      const result = await sendChat(message);
+      const botMsg = { message: result.text, sender: "bot" };
       setMessages((prev) => [...prev, botMsg]);
     }
     setError(false);
