@@ -7,112 +7,130 @@ export default function ChatBot() {
   const chatEndRef = useRef(null);
   const controllerRef = useRef(null);
 
-  const [messages, setMessages] = useState([]);
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  const [chatState,setchatState] = useState({
+    messages: [],
+    status: "idle",
+    error: null                 
+  });
 
   
+  // Auto scroll
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatState.messages]);
+
+  //
   useEffect(() => {
     return () => {
       controllerRef.current?.abort();
     };
   }, []);
-
+  
   const sendMessage = async (message) => {
-  if (loading) return;
+    if(chatState.status === "loading" || chatState.status === "streaming") return;
+    
+    
+    setchatState((prev)=>({
+      ...prev,
+      messages: [
+        ...prev.messages,{ message, sender: "user" },{ message: "", sender: "bot" }
+      ],
+      status: "loading",
+      error: null
+    }));
 
-  setError(false);
-  setLoading(true);
+    try {
+      const USE_STREAM = true;
 
-  const userMsg = { message, sender: "user" };
-  setMessages((prev) => [...prev, userMsg]);
+      if (USE_STREAM) {
 
-  try {
-    const USE_STREAM = true;
+        let botText = "";
 
-    if (USE_STREAM) {
+        controllerRef.current?.abort(); // to delete previous refrence of abort 
 
-      // Initialize the empty bot message in the UI
-      let botIndex;  // index using to avoid bugs
-      setMessages((prev) => {
-        botIndex = prev.length;
-        return [...prev, { message: "", sender: "bot" }];
-      });
+        const controller = new AbortController(); //create new abort ref
+        controllerRef.current = controller;
 
-      let botText = ""; //keeps adding chunk
+        // Start the streaming
+        await streamChat({
+          message,
+          signal:controller.signal,
+          onChunk:(chunk) => {
 
-      controllerRef.current?.abort(); // to delete previous refrence of abort 
+            botText += chunk;
 
-      const controller = new AbortController(); //create new abort ref
-      controllerRef.current = controller;
+            setchatState(prev=>{
+              const updated = [...prev.messages];
+              updated[updated.length-1].message = botText;
 
-      // Start the streaming
-      await streamChat({
-        message,
-        signal:controller.signal,
-        onChunk:(chunk) => {
+              return({
+                ...prev,
+                status: "streaming",
+                messages: updated
+              })
+            })
+          }
+        });  
+      } else {
 
-        
-          botText += chunk;
+        const result = await sendChat(message);
+        setchatState(prev=>{
+          const updated = [...prev.messages];
+          updated[updated.length-1].message = result.text;
+          return({
+            ...prev,
+            messages: updated
+          })
+        })
+      }
 
-          setMessages((prev) => {
-              const updated = [...prev];
-              if (updated[botIndex]) {
-                updated[botIndex].message = botText;
-              }
-              return updated;
-          });
-        }
-      });  
-    } else {
-      const result = await sendChat(message);
-      const botMsg = { message: result.text, sender: "bot" };
-      setMessages((prev) => [...prev, botMsg]);
+    }catch (err) {
+      if(err.name === "AbortError") {
+        console.log("Aborted");
+      }else {
+        console.error(err);
+        setchatState(prev=>({
+          ...prev,
+          status: "error",
+          error: err.status == "500"?"Server not responding":"Couldn,t connect... Please check your connection"
+        }))
+      }
+    }finally {
+      setchatState(prev=>(prev.status === "error"? {...prev}:{...prev,status:"idle",error:null}));
     }
-    setError(false);
+  };
 
-  }catch (err) {
-    if(err.name === "AbortError") {
-      console.log("Aborted");
-    }else {
-      console.error(err);
-      setError(true);
-    }
-  }finally {
-      setLoading(false);
-  }
-};
+  return(
+    <div className="relative h-screen flex flex-col justify-between bg-gray-900 text-white">
 
-return(
-    <div className="h-screen flex flex-col justify-between bg-gray-900 text-white">
-
-      {!messages.length && (
+      {!chatState.messages.length && (
         <h1 className="font-bold text-4xl text-center text-gray-500 flex justify-center items-center h-full">
           Hey there...!! <br /> How can I help you?
         </h1>
       )}
 
       <div className="flex-1 overflow-y-auto px-6 md:px-[18%] space-y-2">
-        {messages.map((msg, i) => (
+        {chatState.messages.map((msg, i) => (
           <Messages key={i} msg={msg} />
         ))}
 
-        {loading && (
-          <div className="text-gray-400">Typing...</div>
+        {(chatState.status === "loading" || chatState.status === "streaming") && (
+          <div className="text-gray-400">{chatState.status === "streaming"?"Typing...":"Thinking..."}</div>
         )}
 
-        {error && !loading && (
-          <div className="text-red-500">Something went wrong. Try again.</div>
+        {(chatState.status === "error") && (
+          <div className="text-red-500">{chatState.error || "Something went wrong..!"}</div>
         )}
 
         <div ref={chatEndRef} />
       </div>
 
-      <InputBox sendMessage={sendMessage} loading={loading} onStop={() => controllerRef.current?.abort()} />
+      <div className={`relative ${chatState.messages.length?"":"top-[-40%]"}`}>
+      <InputBox 
+      sendMessage={sendMessage} 
+      loading={chatState.status === "loading" || chatState.status === "streaming"} 
+      onStop={() => controllerRef.current?.abort()} />
+      </div>
     </div>
   );
 }

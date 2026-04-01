@@ -48,7 +48,7 @@ export default function InputBox({ sendMessage, loading, onStop }) {
   }
 
   return (
-    <div className='md:px-[18%] px-10'>
+    <div className='md:px-[20%] px-10 w-full'>
       <div className='relative'>
         <textarea
           ref={inputRef}
@@ -56,13 +56,13 @@ export default function InputBox({ sendMessage, loading, onStop }) {
           onChange={handleChange}
           onKeyDown={handleKeyPress}
           placeholder="Ask about college, admissions, hostel, fees..."
-          className="w-full p-4 pr-16 rounded-2xl bg-gray-800 text-white resize-none overflow-hidden max-h-40 shadow-md shadow-gray-600 outline-none"
+          className="w-full p-2 pr-16 rounded-2xl bg-gray-800 text-white resize-none overflow-hidden max-h-40 shadow-md shadow-gray-600 outline-none"
         />
 
       
         <button
           onClick={handleClick}
-          className="absolute right-3 bottom-6 h-10 w-10 rounded-full flex items-center justify-center bg-white text-black"
+          className="absolute right-3 bottom-4 h-10 w-10 rounded-full flex items-center justify-center bg-white text-black"
         >
           {loading ? (
             // STOP ICON
