@@ -101,15 +101,15 @@ export default function ChatBot() {
   };
 
   return(
-    <div className="relative h-screen flex flex-col justify-between bg-gray-900 text-white">
+    <div className="py-10 h-screen w-screen flex flex-col justify-between items-center bg-gray-900 text-white">
 
       {!chatState.messages.length && (
-        <h1 className="font-bold text-4xl text-center text-gray-500 flex justify-center items-center h-full">
+        <h1 className="font-bold text-4xl text-center text-gray-500 flex justify-center items-center h-[80%]">
           Hey there...!! <br /> How can I help you?
         </h1>
       )}
 
-      <div className="flex-1 overflow-y-auto px-6 md:px-[18%] space-y-2">
+      <div className="flex-1 w-full overflow-y-auto px-6 md:px-[18%] space-y-2">
         {chatState.messages.map((msg, i) => (
           <Messages key={i} msg={msg} />
         ))}
@@ -125,7 +125,7 @@ export default function ChatBot() {
         <div ref={chatEndRef} />
       </div>
 
-      <div className={`relative ${chatState.messages.length?"":"top-[-40%]"}`}>
+      <div className={`relative w-full ${chatState.messages.length?"w-full":"top-[-40%] lg:w-[60%]"}`}>
       <InputBox 
       sendMessage={sendMessage} 
       loading={chatState.status === "loading" || chatState.status === "streaming"} 

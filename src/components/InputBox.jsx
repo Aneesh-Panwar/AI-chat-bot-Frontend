@@ -33,7 +33,7 @@ export default function InputBox({ sendMessage, loading, onStop }) {
   function handleSend() {
     if (!msg.trim() || loading) return;
 
-    sendMessage(msg);
+    sendMessage(msg.trim());
     setMsg("");
 
     setTimeout(() => adjustHeight(), 0);
@@ -48,21 +48,21 @@ export default function InputBox({ sendMessage, loading, onStop }) {
   }
 
   return (
-    <div className='md:px-[20%] px-10 w-full'>
-      <div className='relative'>
+    <div className='md:px-[18%] px-6 w-full'>
+      <div className='relative box-border'>
         <textarea
           ref={inputRef}
           value={msg}
           onChange={handleChange}
           onKeyDown={handleKeyPress}
           placeholder="Ask about college, admissions, hostel, fees..."
-          className="w-full p-2 pr-16 rounded-2xl bg-gray-800 text-white resize-none overflow-hidden max-h-40 shadow-md shadow-gray-600 outline-none"
+          className="w-full ps-5 pt-4 pb-1 pr-16 rounded-4xl bg-gray-800 text-white resize-none overflow-hidden h-17 max-h-40 shadow-md shadow-slate-800 outline-none border-2"
         />
 
       
         <button
           onClick={handleClick}
-          className="absolute right-3 bottom-4 h-10 w-10 rounded-full flex items-center justify-center bg-white text-black"
+          className="absolute right-3 bottom-5 h-10 w-10 rounded-full flex items-center justify-center bg-white text-black"
         >
           {loading ? (
             // STOP ICON
